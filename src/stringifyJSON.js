@@ -26,6 +26,8 @@ var stringifyJSON = function(obj) {
       result += obj;
     } else if (obj instanceof Date) {
       result += stringifyJSON(obj.toISOString());
+    } else if (obj instanceof Boolean || obj instanceof Number || obj instanceof String) {
+      result += stringifyJSON(obj.valueOf());
     } else if (Array.isArray(obj)) {
       result += '[';
       for (let i = 0; i < obj.length; i++) {
