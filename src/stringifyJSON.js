@@ -9,6 +9,11 @@ var stringifyJSON = function(obj) {
   let type = typeof obj;
 
   switch (type) {
+  case 'function':
+  case 'undefined':
+  case 'symbol':
+    return;
+    break;
   case 'boolean':
   case 'number':
     result += obj;
@@ -25,7 +30,11 @@ var stringifyJSON = function(obj) {
         if (!result.endsWith('[')) {
           result += ',';
         }
-        result += stringifyJSON(obj[i]);
+        if (['function', 'undefined', 'symbol'].indexOf(typeof obj[i]) > -1) {
+          result += stringifyJSON(null);
+        } else {
+          result += stringifyJSON(obj[i]);
+        }
       }
       result += ']';
     } else {   //is a generic object
@@ -34,7 +43,9 @@ var stringifyJSON = function(obj) {
         if (!result.endsWith('{')) {
           result += ',';
         }
-        result += stringifyJSON(prop) + ':' + stringifyJSON(obj[prop]);
+        if (!(['function', 'undefined', 'symbol'].indexOf(typeof obj[prop]) > -1)) {
+          result += stringifyJSON(prop) + ':' + stringifyJSON(obj[prop]);
+        }
       }
       result += '}';
     }
