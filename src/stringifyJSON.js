@@ -13,6 +13,14 @@ var stringifyJSON = function(obj) {
   case 'number':
     result += obj;
     break;
+  case 'string':
+    result += '"' + obj + '"';
+    break;
+  case 'object':
+    if (obj === null) {
+      result += obj;
+    }
+    break;
   }
 
   return result;
