@@ -22,10 +22,10 @@ var stringifyJSON = function(obj) {
     } else if (Array.isArray(obj)) {
       result += '[';
       for (let i = 0; i < obj.length; i++) {
-        result += stringifyJSON(obj[i]);
-        if (i !== obj.length - 1) {
+        if (!result.endsWith('[')) {
           result += ',';
         }
+        result += stringifyJSON(obj[i]);
       }
       result += ']';
     } else {   //is a generic object
