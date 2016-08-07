@@ -28,6 +28,15 @@ var stringifyJSON = function(obj) {
         }
       }
       result += ']';
+    } else {   //is a generic object
+      result += '{';
+      for (let prop in obj) {
+        if (!result.endsWith('{')) {
+          result += ',';
+        }
+        result += stringifyJSON(prop) + ':' + stringifyJSON(obj[prop]);
+      }
+      result += '}';
     }
     break;
   }
