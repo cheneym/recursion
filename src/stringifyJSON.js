@@ -24,6 +24,8 @@ var stringifyJSON = function(obj) {
   case 'object':
     if (obj === null) {
       result += obj;
+    } else if (obj instanceof Date) {
+      result += stringifyJSON(obj.toISOString());
     } else if (Array.isArray(obj)) {
       result += '[';
       for (let i = 0; i < obj.length; i++) {
