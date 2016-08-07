@@ -5,4 +5,15 @@
 
 var stringifyJSON = function(obj) {
   // your code goes here
+  let result = '';
+  let type = typeof obj;
+
+  switch (type) {
+  case 'boolean':
+  case 'number':
+    result += obj;
+    break;
+  }
+
+  return result;
 };
