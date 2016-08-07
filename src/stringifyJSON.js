@@ -19,6 +19,15 @@ var stringifyJSON = function(obj) {
   case 'object':
     if (obj === null) {
       result += obj;
+    } else if (Array.isArray(obj)) {
+      result += '[';
+      for (let i = 0; i < obj.length; i++) {
+        result += stringifyJSON(obj[i]);
+        if (i !== obj.length - 1) {
+          result += ',';
+        }
+      }
+      result += ']';
     }
     break;
   }
