@@ -5,15 +5,19 @@
 
 // But instead we're going to implement it from scratch:
 var getElementsByClassName = function(className) {
+  if (className === undefined) {
+    return [];
+  }
+
   let targetClasses = className.split(' ');
 
   var getElemByClassName = function (obj) {
     let result = [];
 
-    if (obj === null) {
+    if (obj === null || obj === undefined || obj.className === undefined) {
       return result;
     }
-
+    
     let objClasses = obj.className.split(' ');
     let hasTargetClasses = targetClasses.every(function(name, index) {
       return (objClasses.indexOf(name) > -1);
@@ -24,7 +28,7 @@ var getElementsByClassName = function(className) {
     }
     result = result.concat(getElemByClassName(obj.firstElementChild));
     result = result.concat(getElemByClassName(obj.nextElementSibling));
-    
+
     return result;
   };
 
