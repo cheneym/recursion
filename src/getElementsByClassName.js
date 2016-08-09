@@ -10,6 +10,10 @@ var getElementsByClassName = function(className) {
   var getElemByClassName = function (obj) {
     let result = [];
 
+    if (obj === null) {
+      return result;
+    }
+
     let objClasses = obj.className.split(' ');
     let hasTargetClasses = targetClasses.every(function(name, index) {
       return (objClasses.indexOf(name) > -1);
@@ -18,7 +22,9 @@ var getElementsByClassName = function(className) {
     if (hasTargetClasses) {
       result.push(obj);
     }
-
+    result = result.concat(getElemByClassName(obj.firstElementChild));
+    result = result.concat(getElemByClassName(obj.nextElementSibling));
+    
     return result;
   };
 
