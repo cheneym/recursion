@@ -9,7 +9,7 @@ var getElementsByClassName = function(className) {
     return [];
   }
 
-  let targetClasses = className.split(' ');
+  let targetClasses = className.toString().split(' ');
 
   var getElemByClassName = function (obj) {
     let result = [];
@@ -17,7 +17,7 @@ var getElementsByClassName = function(className) {
     if (obj === null || obj === undefined || obj.className === undefined) {
       return result;
     }
-    
+
     let objClasses = obj.className.split(' ');
     let hasTargetClasses = targetClasses.every(function(name, index) {
       return (objClasses.indexOf(name) > -1);
