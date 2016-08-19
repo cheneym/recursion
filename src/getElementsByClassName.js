@@ -26,8 +26,10 @@ var getElementsByClassName = function(className) {
     if (hasTargetClasses) {
       result.push(obj);
     }
-    result = result.concat(getElemByClassName(obj.firstElementChild));
-    result = result.concat(getElemByClassName(obj.nextElementSibling));
+
+    for (let i = 0; i < obj.childNodes.length; i++) {
+      result = result.concat(getElemByClassName(obj.childNodes[i]));
+    }
 
     return result;
   };
