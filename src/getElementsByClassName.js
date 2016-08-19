@@ -14,13 +14,13 @@ var getElementsByClassName = function(className) {
   var getElemByClassName = function (obj) {
     let result = [];
 
-    if (obj === null || obj === undefined || obj.className === undefined) {
+    if (obj === null || obj === undefined || obj.classList === undefined) {
       return result;
     }
 
-    let objClasses = obj.className.split(' ');
+    let objClasses = obj.classList;
     let hasTargetClasses = targetClasses.every(function(name, index) {
-      return (objClasses.indexOf(name) > -1);
+      return objClasses.contains(name);
     });
     
     if (hasTargetClasses) {
