@@ -10,7 +10,56 @@ var parseJSON = function(json) {
   let result;
 
   let buildArray = function(str) {
+    str = str.slice(1, str.length - 1);
+    let stack = [];
+    let items = [];
 
+    for (let i = 0; i < str.length; i++) {
+      switch (str[i]) {
+      case ',':
+        break;
+      case '{':
+      case '[':
+      case '"':
+        let char = str[i];
+        let pair = '"';
+        if (char === '[') {
+          pair = ']';
+        } else if (char === '{') {
+          pair = '}';
+        }
+        stack.push(char);
+
+        for (let j = i + 1; j < str.length; j++) {
+          if (str[j] === pair) {
+            stack.pop();
+          } else if (str[j] === char) {
+            stack.push(char);
+          } 
+          if (stack.length === 0) {
+            let item = str.slice(i, j + 1);
+            items.push(item);
+            i = j;
+            break;
+          }
+        }
+        break;
+      default:
+        for (let j = i; j < str.length; j++) {
+          if (str[j] === ',') {
+            let item = str.slice(i, j);
+            items.push(item);
+            i = j - 1;
+            break;
+          } else if (j === str.length - 1) {
+            let item = str.slice(i, j + 1);
+            items.push(item);
+            i = j;
+            break;
+          }
+        }
+      }
+    }
   };
 
   let buildObject = function(str) {
