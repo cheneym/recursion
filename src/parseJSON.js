@@ -48,7 +48,7 @@ var parseJSON = function(json) {
         break;
       default:
         for (let j = i; j < str.length; j++) {
-          if (str[j] === ',') {
+          if (str[j] === ',' || str[j] === ' ') {
             let item = str.slice(i, j);
             items.push(item);
             i = j - 1;
@@ -120,7 +120,7 @@ var parseJSON = function(json) {
         break;
       default:
         for (let j = i; j < str.length; j++) {
-          if (str[j] === ',') {
+          if (str[j] === ',' || str[j] === ' ') {
             let item = str.slice(i, j);
             if (lookingForProp) {
               props.push(item);
