@@ -21,6 +21,7 @@ var parseJSON = function(json) {
 
   let decomposeObject = function(str) {
     str = str.slice(1, str.length - 1);
+    str = str.split('');
     let stack = [];
     let items = [];
 
@@ -38,14 +39,16 @@ var parseJSON = function(json) {
         stack.push(char);
 
         for (let j = i + 1; j < str.length; j++) {
-          if (str[j] === pair) {
+          if (str[j] === '\\') {
+            str.splice(j, 1);
+          } else if (str[j] === pair) {
             stack.pop();
           } else if (str[j] === char) {
             stack.push(char);
           }
 
           if (stack.length === 0) {
-            let item = str.slice(i, j + 1);
+            let item = str.slice(i, j + 1).join('');
             items.push(item);
             i = j;
             break;
@@ -56,12 +59,12 @@ var parseJSON = function(json) {
       default:
         for (let j = i; j < str.length; j++) {
           if (str[j] === ',' || str[j] === ' ') {
-            let item = str.slice(i, j);
+            let item = str.slice(i, j).join('');
             items.push(item);
             i = j;
             break;
           } else if (j === str.length - 1) {
-            let item = str.slice(i, j + 1);
+            let item = str.slice(i, j + 1).join('');
             items.push(item);
             i = j;
             break;
