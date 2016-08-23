@@ -9,16 +9,17 @@ var parseJSON = function(json) {
 
   let result;
 
-  let extractFromArray = function(str) {
+  let buildArray = function(str) {
 
   };
 
-  let extractFromObject = function(str) {
+  let buildObject = function(str) {
     str = str.slice(1, str.length - 1);
     let lookingForProp = true;
     let stack = [];
     let props = [];
     let vals = [];
+
     for (let i = 0; i < str.length; i++) {
       switch (str[i]) {
       case ':':
@@ -72,6 +73,13 @@ var parseJSON = function(json) {
         }
       }
     }
+
+    let result = {};
+    for (let i = 0; i < props.length; i++) {
+      result[parseJSON(props[i])] = parseJSON(vals[i]);
+    }
+
+    return result;
   };
 
   if (json === 'true') {
@@ -81,7 +89,7 @@ var parseJSON = function(json) {
   } else {
     switch (json[0]) {
     case '{':
-      result = {};
+      result = buildObject(json);
       break;
     case '[':
       result = [];
