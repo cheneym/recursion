@@ -116,8 +116,8 @@ var parseJSON = function(json) {
         }
         break;
       default:
-        for (let j = i + 1; j < str.length; j++) {
-          if (str[j] === ',' || str[j] === '}') {
+        for (let j = i; j < str.length; j++) {
+          if (str[j] === ',') {
             let item = str.slice(i, j);
             if (lookingForProp) {
               props.push(item);
@@ -125,6 +125,15 @@ var parseJSON = function(json) {
               vals.push(item);
             }
             i = j - 1;
+            break;
+          } else if (j === str.length - 1) {
+            let item = str.slice(i, j + 1);
+            if (lookingForProp) {
+              props.push(item);
+            } else {
+              vals.push(item);
+            }
+            i = j;
             break;
           }
         }
