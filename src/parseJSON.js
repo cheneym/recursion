@@ -16,6 +16,7 @@ var parseJSON = function(json) {
 
     for (let i = 0; i < str.length; i++) {
       switch (str[i]) {
+      case ' ':
       case ',':
         break;
       case '{':
@@ -79,6 +80,8 @@ var parseJSON = function(json) {
 
     for (let i = 0; i < str.length; i++) {
       switch (str[i]) {
+      case ' ':
+        break;
       case ':':
         lookingForProp = false;
         break;
