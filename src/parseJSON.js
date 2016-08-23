@@ -157,20 +157,15 @@ var parseJSON = function(json) {
     result = false;
   } else if (json === 'null') {
     result = null;
+  } else if (json[0] === '{') {
+    result = buildObject(json);
+  } else if (json[0] === '[') {
+    result = buildArray(json);
+  } else if (json[0] === '"') {
+    result = json.slice(1, json.length - 1);
   } else {
-    switch (json[0]) {
-    case '{':
-      result = buildObject(json);
-      break;
-    case '[':
-      result = buildArray(json);
-      break;
-    case '"':
-      result = json.slice(1, json.length - 1);
-      break;
-    default: //must be number
-      result = parseFloat(json);
-    }
+    result = parseFloat(json);
   }
+
   return result;
 };
