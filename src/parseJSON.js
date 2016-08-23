@@ -155,6 +155,8 @@ var parseJSON = function(json) {
     result = true;
   } else if (json === 'false') {
     result = false;
+  } else if (json === 'null') {
+    result = null;
   } else {
     switch (json[0]) {
     case '{':
