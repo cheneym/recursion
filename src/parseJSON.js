@@ -17,10 +17,13 @@ var parseJSON = function(json) {
     switch (json[0]) {
     case '{':
       result = {};
+      break;
     case '[':
       result = [];
+      break;
     case '"':
-      result = '';
+      result = json.slice(1, json.length - 1);
+      break;
     default: //must be number
       result = parseFloat(json);
     }
