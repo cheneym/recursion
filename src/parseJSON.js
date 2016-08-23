@@ -43,6 +43,7 @@ var parseJSON = function(json) {
             break;
           }
         }
+
         break;
       default:
         for (let j = i; j < str.length; j++) {
@@ -60,6 +61,13 @@ var parseJSON = function(json) {
         }
       }
     }
+
+    let result = [];
+    for (let i = 0; i < items.length; i++) {
+      result.push(parseJSON(items[i]));
+    }
+
+    return result;   
   };
 
   let buildObject = function(str) {
@@ -141,7 +149,7 @@ var parseJSON = function(json) {
       result = buildObject(json);
       break;
     case '[':
-      result = [];
+      result = buildArray(json);
       break;
     case '"':
       result = json.slice(1, json.length - 1);
