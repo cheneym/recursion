@@ -9,7 +9,17 @@ var parseJSON = function(json) {
 
   let result;
 
-  let buildArray = function(str) {
+  let findPair = function(char) {
+    if (char === '[') {
+      return ']';
+    } else if (char === '{') {
+      return '}';
+    } else {
+      return '"';
+    }
+  };
+
+  let decomposeObject = function(str) {
     str = str.slice(1, str.length - 1);
     let stack = [];
     let items = [];
@@ -18,17 +28,13 @@ var parseJSON = function(json) {
       switch (str[i]) {
       case ' ':
       case ',':
+      case ':':
         break;
       case '{':
       case '[':
       case '"':
         let char = str[i];
-        let pair = '"';
-        if (char === '[') {
-          pair = ']';
-        } else if (char === '{') {
-          pair = '}';
-        }
+        let pair = findPair(char);
         stack.push(char);
 
         for (let j = i + 1; j < str.length; j++) {
@@ -36,7 +42,8 @@ var parseJSON = function(json) {
             stack.pop();
           } else if (str[j] === char) {
             stack.push(char);
-          } 
+          }
+
           if (stack.length === 0) {
             let item = str.slice(i, j + 1);
             items.push(item);
@@ -51,7 +58,7 @@ var parseJSON = function(json) {
           if (str[j] === ',' || str[j] === ' ') {
             let item = str.slice(i, j);
             items.push(item);
-            i = j - 1;
+            i = j;
             break;
           } else if (j === str.length - 1) {
             let item = str.slice(i, j + 1);
@@ -63,6 +70,11 @@ var parseJSON = function(json) {
       }
     }
 
+    return items;
+  };
+
+  let buildArray = function(str) {
+    let items = decomposeObject(str);
     let result = [];
     for (let i = 0; i < items.length; i++) {
       result.push(parseJSON(items[i]));
@@ -72,80 +84,10 @@ var parseJSON = function(json) {
   };
 
   let buildObject = function(str) {
-    str = str.slice(1, str.length - 1);
-    let lookingForProp = true;
-    let stack = [];
-    let props = [];
-    let vals = [];
-
-    for (let i = 0; i < str.length; i++) {
-      switch (str[i]) {
-      case ' ':
-        break;
-      case ':':
-        lookingForProp = false;
-        break;
-      case ',':
-        lookingForProp = true;
-        break;
-      case '{':
-      case '[':
-      case '"':
-        let char = str[i];
-        let pair = '"';
-        if (char === '[') {
-          pair = ']';
-        } else if (char === '{') {
-          pair = '}';
-        }
-        stack.push(char);
-
-        for (let j = i + 1; j < str.length; j++) {
-          if (str[j] === pair) {
-            stack.pop();
-          } else if (str[j] === char) {
-            stack.push(char);
-          } 
-          if (stack.length === 0) {
-            let item = str.slice(i, j + 1);
-            if (lookingForProp) {
-              props.push(item);
-            } else {
-              vals.push(item);
-            }
-            i = j;
-            break;
-          }
-        }
-        break;
-      default:
-        for (let j = i; j < str.length; j++) {
-          if (str[j] === ',' || str[j] === ' ') {
-            let item = str.slice(i, j);
-            if (lookingForProp) {
-              props.push(item);
-            } else {
-              vals.push(item);
-            }
-            i = j - 1;
-            break;
-          } else if (j === str.length - 1) {
-            let item = str.slice(i, j + 1);
-            if (lookingForProp) {
-              props.push(item);
-            } else {
-              vals.push(item);
-            }
-            i = j;
-            break;
-          }
-        }
-      }
-    }
-
+    let items = decomposeObject(str);
     let result = {};
-    for (let i = 0; i < props.length; i++) {
-      result[parseJSON(props[i])] = parseJSON(vals[i]);
+    for (let i = 0; i < items.length; i += 2) {
+      result[parseJSON(items[i])] = parseJSON(items[i + 1]);
     }
 
     return result;
