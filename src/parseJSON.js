@@ -3,12 +3,6 @@
 
 // but you're not, so you'll write it from scratch:
 var parseJSON = function(json) {
-  if (typeof json === 'boolean' || typeof json === 'number' || json === null) {
-    return json;
-  }
-
-  let result;
-
   let findPair = function(char) {
     if (char === '[') {
       return ']';
@@ -87,7 +81,8 @@ var parseJSON = function(json) {
             i = j;
             break;
           } else if (stack.length !== 0 && j === str.length - 1) {
-            throw new SyntaxError('Invalid Syntax', 'parseJSON.js', 90);
+            //Throw error if no matching closed brace/bracket/quote for every open one.
+            throw new SyntaxError('Invalid Syntax');
           }
         }
 
@@ -116,7 +111,7 @@ var parseJSON = function(json) {
     let items = decomposeObject(str);
     let result = [];
     for (let i = 0; i < items.length; i++) {
-      result.push(parseJSON(items[i]));
+      result.push(parseJSONRecurser(items[i]));
     }
 
     return result;   
@@ -125,28 +120,45 @@ var parseJSON = function(json) {
   let buildObject = function(str) {
     let items = decomposeObject(str);
     let result = {};
+
+    //Throw error if there isn't a value for every key-value pair
+    if (items.length % 2 !== 0) {  
+      throw new SyntaxError('Invalid Syntax');
+    }
+
     for (let i = 0; i < items.length; i += 2) {
-      result[parseJSON(items[i])] = parseJSON(items[i + 1]);
+      result[parseJSONRecurser(items[i])] = parseJSONRecurser(items[i + 1]);
     }
 
     return result;
   };
 
-  if (json === 'true') {
-    result = true;
-  } else if (json === 'false') {
-    result = false;
-  } else if (json === 'null') {
-    result = null;
-  } else if (json[0] === '{') {
-    result = buildObject(json);
-  } else if (json[0] === '[') {
-    result = buildArray(json);
-  } else if (json[0] === '"') {
-    result = json.slice(1, json.length - 1);
-  } else {
-    result = parseFloat(json);
-  }
+  let parseJSONRecurser = function(json) {
+    if (typeof json === 'boolean' || typeof json === 'number' || json === null) {
+      return json;
+    }
+    json.trim();    
+    
+    let result;
 
-  return result;
+    if (json === 'true') {
+      result = true;
+    } else if (json === 'false') {
+      result = false;
+    } else if (json === 'null') {
+      result = null;
+    } else if (json[0] === '{') {
+      result = buildObject(json);
+    } else if (json[0] === '[') {
+      result = buildArray(json);
+    } else if (json[0] === '"') {
+      result = json.slice(1, json.length - 1);
+    } else {
+      result = parseFloat(json);
+    }
+
+    return result;
+  };
+  
+  return parseJSONRecurser(json);
 };
