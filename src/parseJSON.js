@@ -48,6 +48,7 @@ var parseJSON = function(json) {
   };
 
   let decomposeObject = function(str) {
+    str = str.trim();
     str = str.slice(1, str.length - 1);
     str = str.split('');
     let stack = [];
@@ -55,6 +56,11 @@ var parseJSON = function(json) {
 
     for (let i = 0; i < str.length; i++) {
       switch (str[i]) {
+      case '\b':
+      case '\f':
+      case '\n':
+      case '\r':
+      case '\t':
       case ' ':
       case ',':
       case ':':
@@ -100,7 +106,7 @@ var parseJSON = function(json) {
         }
       }
     }
-
+    
     return items;
   };
 
