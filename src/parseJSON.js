@@ -86,6 +86,8 @@ var parseJSON = function(json) {
             items.push(item);
             i = j;
             break;
+          } else if (stack.length !== 0 && j === str.length - 1) {
+            throw new SyntaxError('Invalid Syntax', 'parseJSON.js', 90);
           }
         }
 
@@ -106,7 +108,7 @@ var parseJSON = function(json) {
         }
       }
     }
-    
+
     return items;
   };
 
