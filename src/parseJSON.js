@@ -19,6 +19,34 @@ var parseJSON = function(json) {
     }
   };
 
+  let replaceChar = function(char) {
+    switch (char) {
+    case 'b':
+      return '\b';
+      break;
+    case 't':
+      return '\t';
+      break;      
+    case 'n':
+      return '\n';
+      break;
+    case 'v':
+      return '\v';
+      break; 
+    case 'f':
+      return '\f';
+      break; 
+    case 'r':
+      return '\r';
+      break;
+    //case 'u':
+    //  return '\u';
+    //  break;  
+    default:
+      return char;
+    }
+  };
+
   let decomposeObject = function(str) {
     str = str.slice(1, str.length - 1);
     str = str.split('');
@@ -40,7 +68,7 @@ var parseJSON = function(json) {
 
         for (let j = i + 1; j < str.length; j++) {
           if (str[j] === '\\') {
-            str.splice(j, 1);
+            str.splice(j, 2, replaceChar(str[j + 1]));
           } else if (str[j] === pair) {
             stack.pop();
           } else if (str[j] === char) {
