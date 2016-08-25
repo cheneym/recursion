@@ -356,5 +356,13 @@ var parseJSON = function(json) {
     return json;
   }
 
-  return extractValue(json.split(''));
+  let splitJson = json.split('');
+  let result = extractValue(splitJson);
+  clearWhiteSpace(splitJson);
+  
+  if (splitJson.length !== 0) {
+    throw new SyntaxError('Unexpected token ' + splitJson[0] + ' in JSON');
+  } else {
+    return result;
+  }
 };
