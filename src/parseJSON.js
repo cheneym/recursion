@@ -179,6 +179,28 @@ var parseJSON = function(json) {
     return extractResult(str, str.length);
   };
 
+  let extractBoolOrNull = function(str, match, result) {
+    for (let i = 0; i < match.length; i++) {
+      if (!(str[i] === match[i])) {
+        throw new SyntaxError('Unexpected token ' + str[i] + ' in JSON at position ' + i);
+      }
+    }
+    str.splice(0, match.length);
+    return result;
+  };
+
+  let extractTrue = function(str) {
+    return extractBoolOrNull(str, 'true', true);
+  };
+  
+  let extractFalse = function(str) {
+    return extractBoolOrNull(str, 'false', false);
+  };
+  
+  let extractNull = function(str) { 
+    return extractBoolOrNull(str, 'null', null);
+  };
+
   let findPair = function(char) {
     if (char === '[') {
       return ']';
