@@ -1,7 +1,3 @@
-// this is what you would do if you were one to do things the easy way:
-// var parseJSON = JSON.parse;
-
-// but you're not, so you'll write it from scratch:
 var parseJSON = function(json) {
 
   let clearWhiteSpace = function(str) {
@@ -14,6 +10,28 @@ var parseJSON = function(json) {
     if (!char.match(allowableChars)) {
       throw new SyntaxError('Unexpected token ' + char + ' in JSON at position ' + pos);
     }
+  };
+
+  let extractBoolOrNull = function(str, match, result) {
+    for (let i = 0; i < match.length; i++) {
+      if (!(str[i] === match[i])) {
+        throw new SyntaxError('Unexpected token ' + str[i] + ' in JSON at position ' + i);
+      }
+    }
+    str.splice(0, match.length);
+    return result;
+  };
+
+  let extractTrue = function(str) {
+    return extractBoolOrNull(str, 'true', true);
+  };
+  
+  let extractFalse = function(str) {
+    return extractBoolOrNull(str, 'false', false);
+  };
+  
+  let extractNull = function(str) { 
+    return extractBoolOrNull(str, 'null', null);
   };
 
   let extractString = function(str) {
@@ -32,10 +50,10 @@ var parseJSON = function(json) {
           allowableChars = regexes[1];
         } else {
           let result = str.slice(1, i).join('');
-          str.splice(0, i);
+          str.splice(0, i + 1);
           return result;
         }
-      } else if (char === '\\') {
+      } else if (char === '\\' && !escaped) {
         allowableChars = regexes[2];
         escaped = true;
         str.splice(i, 1);
@@ -87,8 +105,8 @@ var parseJSON = function(json) {
     throw new SyntaxError('Unexpected end of JSON input');
   };
 
-  let extractNumber = function(str, index) {
-    let extractResult = function(str) {
+  let extractNumber = function(str) {
+    let extractResult = function(str, index) {
       let result = parseFloat(str.slice(0, index).join(''));
       str.splice(0, index);
       return result;
@@ -96,13 +114,13 @@ var parseJSON = function(json) {
 
     clearWhiteSpace(str);
     let regexes = {
-      '0': /['-'0-9]/,
+      '0': /['\-'0-9]/,
       '1': /[0-9]/, 
       '2': /./,
       '3': /./,
       '4': /[0-9]/,
       '5': /./, 
-      '6': /['+''-'0-9]/,
+      '6': /['\+''\-'0-9]/,
       '7': /[0-9]/,
       '8': /./
     };
@@ -155,6 +173,7 @@ var parseJSON = function(json) {
       case 5:
         if (char === 'e' || char === 'E') {
           currentState = 6;
+        } else if (char.match(/[0-9]/)) {
         } else {
           return extractResult(str, i);
         }
@@ -179,184 +198,163 @@ var parseJSON = function(json) {
     return extractResult(str, str.length);
   };
 
-  let extractBoolOrNull = function(str, match, result) {
-    for (let i = 0; i < match.length; i++) {
-      if (!(str[i] === match[i])) {
-        throw new SyntaxError('Unexpected token ' + str[i] + ' in JSON at position ' + i);
+  let extractObject = function(str) {
+    let buildObject = function(keys, values) {
+      let obj = {};
+
+      for (let i = 0; i < keys.length; i++) {
+        obj[keys[i]] = values[i];
+      }
+
+      return obj;
+    };
+
+    clearWhiteSpace(str);
+    let regexes = {
+      '0': /{/,
+      '1': /["}]/,
+      '2': /:/, 
+      '3': /./,
+      '4': /[,}]/,
+      '5': /"/
+    };
+    let state = 0;
+    let keys = [];
+    let values = [];
+    let char;
+    while (str.length > 0) {
+      clearWhiteSpace(str);
+      char = str[0];
+      charValid(char, regexes[state], 0);
+      switch (state) {
+      case 0:
+        str.splice(0, 1);
+        state = 1;
+        break;
+      case 1:
+        if (char === '}') {
+          str.splice(0, 1);
+          return buildObject(keys, values);
+        } else { //if (char === '"') 
+          keys.push(extractString(str));
+          state = 2;
+        }
+        break;
+      case 2:
+        str.splice(0, 1);
+        state = 3;
+        break;
+      case 3:
+        values.push(extractValue(str));
+        state = 4;
+        break;
+      case 4:
+        if (char === '}') {
+          str.splice(0, 1);
+          return buildObject(keys, values);
+        } else {
+          str.splice(0, 1);
+          state = 5;
+        }
+        break;
+      case 5:
+        keys.push(extractString(str));
+        state = 2;
+        break;      
       }
     }
-    str.splice(0, match.length);
-    return result;
+    throw new SyntaxError('Unexpected end of JSON input');
   };
 
-  let extractTrue = function(str) {
-    return extractBoolOrNull(str, 'true', true);
-  };
-  
-  let extractFalse = function(str) {
-    return extractBoolOrNull(str, 'false', false);
-  };
-  
-  let extractNull = function(str) { 
-    return extractBoolOrNull(str, 'null', null);
-  };
-
-  let findPair = function(char) {
-    if (char === '[') {
-      return ']';
-    } else if (char === '{') {
-      return '}';
-    } else {
-      return '"';
-    }
-  };
-
-  let replaceChar = function(char) {
-    switch (char) {
-    case 'b':
-      return '\b';
+  let extractValue = function(str) {
+    clearWhiteSpace(str);
+    switch (str[0]) {
+    case '"':
+      return extractString(str);
+      break;
+    case '{':
+      return extractObject(str);
+      break;
+    case '[':
+      return extractArray(str);
       break;
     case 't':
-      return '\t';
-      break;      
-    case 'n':
-      return '\n';
+      return extractTrue(str);
       break;
-    case 'v':
-      return '\v';
-      break; 
     case 'f':
-      return '\f';
-      break; 
-    case 'r':
-      return '\r';
+      return extractFalse(str);
       break;
-    //case 'u':
-    //  return '\u';
-    //  break;  
+    case 'n':
+      return extractNull(str);
+      break;
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '-':
+      return extractNumber(str);
+      break;
     default:
-      return char;
+      throw new SyntaxError('Unexpected token ' + str[0] + ' in JSON at position ' + 0);
     }
   };
 
-  let decomposeObject = function(str) {
-    str = str.trim();
-    str = str.slice(1, str.length - 1);
-    str = str.split('');
-    let stack = [];
-    let items = [];
-
-    for (let i = 0; i < str.length; i++) {
-      switch (str[i]) {
-      case '\b':
-      case '\f':
-      case '\n':
-      case '\r':
-      case '\t':
-      case ' ':
-      case ',':
-      case ':':
+  let extractArray = function(str) {
+    clearWhiteSpace(str);
+    let regexes = {
+      '0': /['[']/,
+      '1': /./,
+      '2': /['\]',]/, 
+      '3': /./
+    };
+    let state = 0;
+    let result = [];
+    let char;
+    while (str.length > 0) {
+      clearWhiteSpace(str);
+      char = str[0];
+      charValid(char, regexes[state], 0);
+      switch (state) {
+      case 0:
+        str.splice(0, 1);
+        state = 1;
         break;
-      case '{':
-      case '[':
-      case '"':
-        let char = str[i];
-        let pair = findPair(char);
-        stack.push(char);
-
-        for (let j = i + 1; j < str.length; j++) {
-          if (str[j] === '\\') {
-            str.splice(j, 2, replaceChar(str[j + 1]));
-          } else if (str[j] === pair) {
-            stack.pop();
-          } else if (str[j] === char) {
-            stack.push(char);
-          }
-
-          if (stack.length === 0) {
-            let item = str.slice(i, j + 1).join('');
-            items.push(item);
-            i = j;
-            break;
-          } else if (stack.length !== 0 && j === str.length - 1) {
-            //Throw error if no matching closed brace/bracket/quote for every open one.
-            throw new SyntaxError('Invalid Syntax');
-          }
+      case 1:
+        if (char === ']') {
+          str.splice(0, 1);
+          return result;
+        } else { //if (char is a value)
+          result.push(extractValue(str));
+          state = 2;
         }
-
         break;
-      default:
-        for (let j = i; j < str.length; j++) {
-          if (str[j] === ',' || str[j] === ' ') {
-            let item = str.slice(i, j).join('');
-            items.push(item);
-            i = j;
-            break;
-          } else if (j === str.length - 1) {
-            let item = str.slice(i, j + 1).join('');
-            items.push(item);
-            i = j;
-            break;
-          }
+      case 2:
+        if (char === ']') {
+          str.splice(0, 1);
+          return result;
+        } else if (char === ',') {
+          str.splice(0, 1);
+          state = 3;
         }
+        break;
+      case 3:
+        result.push(extractValue(str));
+        state = 2;
+        break;      
       }
     }
-
-    return items;
-  };
-
-  let buildArray = function(str) {
-    let items = decomposeObject(str);
-    let result = [];
-    for (let i = 0; i < items.length; i++) {
-      result.push(parseJSONRecurser(items[i]));
-    }
-
-    return result;   
-  };
-
-  let buildObject = function(str) {
-    let items = decomposeObject(str);
-    let result = {};
-
-    //Throw error if there isn't a value for every key-value pair
-    if (items.length % 2 !== 0) {  
-      throw new SyntaxError('Invalid Syntax');
-    }
-
-    for (let i = 0; i < items.length; i += 2) {
-      result[parseJSONRecurser(items[i])] = parseJSONRecurser(items[i + 1]);
-    }
-
-    return result;
-  };
-
-  let parseJSONRecurser = function(json) {
-    if (typeof json === 'boolean' || typeof json === 'number' || json === null) {
-      return json;
-    }
-    json.trim();    
-    
-    let result;
-
-    if (json === 'true') {
-      result = true;
-    } else if (json === 'false') {
-      result = false;
-    } else if (json === 'null') {
-      result = null;
-    } else if (json[0] === '{') {
-      result = buildObject(json);
-    } else if (json[0] === '[') {
-      result = buildArray(json);
-    } else if (json[0] === '"') {
-      result = json.slice(1, json.length - 1);
-    } else {
-      result = parseFloat(json);
-    }
-
-    return result;
+    throw new SyntaxError('Unexpected end of JSON input');
   };
   
-  return parseJSONRecurser(json);
+  if (typeof json === 'boolean' || typeof json === 'number' || json === null) {
+    return json;
+  }
+
+  return extractValue(json.split(''));
 };
