@@ -87,6 +87,98 @@ var parseJSON = function(json) {
     throw new SyntaxError('Unexpected end of JSON input');
   };
 
+  let extractNumber = function(str, index) {
+    let extractResult = function(str) {
+      let result = parseFloat(str.slice(0, index).join(''));
+      str.splice(0, index);
+      return result;
+    };
+
+    clearWhiteSpace(str);
+    let regexes = {
+      '0': /['-'0-9]/,
+      '1': /[0-9]/, 
+      '2': /./,
+      '3': /./,
+      '4': /[0-9]/,
+      '5': /./, 
+      '6': /['+''-'0-9]/,
+      '7': /[0-9]/,
+      '8': /./
+    };
+    let currentState = 0;
+    let char;
+
+    for (let i = 0; i < str.length; i++) {
+      char = str[i];
+      charValid(char, regexes[currentState], i);
+      switch (currentState) {
+      case 0:
+        if (char === '-') {
+          currentState = 1;
+        } else if (char === '0') {
+          currentState = 2;
+        } else {
+          currentState = 3;
+        }
+        break;
+      case 1:
+        if (char === '0') {
+          currentState = 2;
+        } else {
+          currentState = 3;
+        }
+        break;
+      case 2:
+        if (char === '.') {
+          currentState = 4;
+        } else if (char === 'e' || char === 'E') {
+          currentState = 6;
+        } else {
+          return extractResult(str, i);
+        }
+        break;
+      case 3:
+        if (char === '.') {
+          currentState = 4;
+        } else if (char === 'e' || char === 'E') {
+          currentState = 6;
+        } else if (char.match(/[0-9]/)) {
+          //stay at state 3
+        } else {
+          return extractResult(str, i);
+        }
+        break;
+      case 4:
+        currentState = 5;
+        break;
+      case 5:
+        if (char === 'e' || char === 'E') {
+          currentState = 6;
+        } else {
+          return extractResult(str, i);
+        }
+        break;
+      case 6:
+        if (char === '-' || char === '+') {
+          currentState = 7;
+        } else {
+          currentState = 8;
+        }
+        break;
+      case 7:
+        currentState = 8;
+        break;
+      case 8:
+        if (!char.match(/[0-9]/)) {
+          return extractResult(str, i);
+        }
+        break;
+      }
+    }
+    return extractResult(str, str.length);
+  };
+
   let findPair = function(char) {
     if (char === '[') {
       return ']';
